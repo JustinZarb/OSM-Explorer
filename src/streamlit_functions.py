@@ -174,3 +174,100 @@ def create_circles_from_nodes(nodes):
         elif node["type"] == "area":
             pass
     return feature_group
+
+
+def create_circles_from_node_dict(nodes):
+    # Loop over each node in the 'bar' key of the JSON object
+    circles = folium.FeatureGroup(name="State bounds")
+    for tag_key in nodes.keys():
+        color = word_to_color(tag_key)
+        for node in nodes[tag_key]:
+            # Get the latitude and longitude of the node
+            lat = node["lat"]
+            lon = node["lon"]
+
+            # Get the 'tags' dictionary
+            tags = node["tags"]
+
+            # Create a string for the hover text
+            hover_text = (
+                f"{tag_key}: {tags.get('name', 'N/A')}\n"  # Add more details here
+            )
+
+            # Create a circle on the map for this key
+            circles.add_child(
+                folium.Circle(
+                    location=[lat, lon],
+                    radius=10,  # Set the radius as needed
+                    color=color,
+                    fill=True,
+                    fill_color=color,
+                    fill_opacity=0.4,
+                    tooltip=hover_text,
+                )
+            )
+
+    return circles
+
+
+def count_tag_frequency_old(data, tag=None):
+    tag_frequency = {}
+
+    for element in data["elements"]:
+        if "tags" in element:
+            for t, v in element["tags"].items():
+                if tag is None:
+                    # Counting tag frequency
+                    if t in tag_frequency:
+                        tag_frequency[t] += 1
+                    else:
+                        tag_frequency[t] = 1
+                else:
+                    # Counting value frequency for a specific tag
+                    if t == tag:
+                        if v in tag_frequency:
+                            tag_frequency[v] += 1
+                        else:
+                            tag_frequency[v] = 1
+
+    return tag_frequency
+
+
+def wordcloud(frequency_dict):
+    tags_freq = [(tag, freq) for tag, freq in frequency_dict.items()]
+    tags_freq.sort(key=lambda x: x[1], reverse=True)  # Sort tags by frequency
+    tags_freq_200 = tags_freq[:200]  # Limit to top 200 tags
+
+    wordcloud = WordCloud(
+        width=800,
+        height=200,
+        background_color="white",
+        stopwords=STOPWORDS,
+        colormap="viridis",
+        random_state=42,
+    )
+    wordcloud.generate_from_frequencies({tag: freq for tag, freq in tags_freq_200})
+    return wordcloud
+
+
+def generate_wordcloud():
+    tag_keys = list(st.session_state.tags_in_bbox.keys())
+    default_key_index = tag_keys.index("amenity") if "amenity" in tag_keys else 0
+
+    # Select a tag key for wordcloud visualisation
+    st.selectbox(
+        label="Select a different tag",
+        options=st.session_state.tags_in_bbox.keys(),
+        index=default_key_index,
+        key="selected_key",
+    )
+
+    # Return a dictionary with the frequency each value appears in the bounding box
+    st.session_state.value_frequency = count_tag_frequency_old(
+        st.session_state.nodes, tag=st.session_state.selected_key
+    )
+
+    # Generate word cloud
+    values_wordcloud = wordcloud(st.session_state.value_frequency)
+    st.subheader(f"Things tagged as '{st.session_state.selected_key}'")
+    st.image(values_wordcloud.to_array(), use_column_width=True)
