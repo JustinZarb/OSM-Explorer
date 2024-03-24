@@ -12,7 +12,7 @@ from shapely.geometry import Polygon, Point, LineString, mapping, MultiPolygon
 import pydeck as pdk
 from math import sqrt, log
 from geopandas import GeoDataFrame
-
+import hashlib
 
 def bbox_from_st_data(st_data):
     """
