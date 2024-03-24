@@ -228,6 +228,20 @@ def count_tag_frequency_old(data, tag=None):
     return tag_frequency
 
 
+def word_to_color(word):
+    # Use MD5 hash to convert the word into a hexadecimal number
+    hash_object = hashlib.md5(word.encode())
+    hex_dig = hash_object.hexdigest()
+    # Take the first 6 characters of the hex number and convert it into an RGB color
+    hex_color = hex_dig[:6]
+    r = int(hex_color[:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    a = 255
+    # Return the RGB color as a tuple
+    return f"rgb({r}, {g}, {b})"
+
+
 def wordcloud(frequency_dict):
     tags_freq = [(tag, freq) for tag, freq in frequency_dict.items()]
     tags_freq.sort(key=lambda x: x[1], reverse=True)  # Sort tags by frequency
