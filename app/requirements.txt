@@ -1,0 +1,12 @@
+folium==0.16.0
+geopandas==0.14.3
+matplotlib==3.8.3
+osmnx==1.9.1
+pandas==2.2.1
+plotly==5.20.0
+pydeck==0.8.1b0
+Requests==2.31.0
+Shapely==2.0.3
+streamlit==1.32.2
+streamlit_folium==0.18.0
+wordcloud==1.9.3
